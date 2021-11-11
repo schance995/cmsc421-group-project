@@ -4,9 +4,12 @@ import json, requests
 
 def api_call(classes):
     '''
-    input: a list of classes
-    output: python data structure from the json
-    https://api.umd.io/v1/courses/CMSC421,CMSC422
+    Return the json dump from the api call to umd.io
+    Parameters:
+    classes (list of strings): list of course ids
+    Returns:
+    A python data structure representing the json
     '''
+    # api call to https://api.umd.io/v1/courses/CMSC421,CMSC422
     return None
 
