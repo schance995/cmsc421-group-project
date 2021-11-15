@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, pip._vendor.requests 
+import json, requests 
 
 def api_call(classes):
     '''
@@ -9,8 +9,8 @@ def api_call(classes):
     https://api.umd.io/v1/courses/CMSC421,CMSC422
     '''
     http_request = 'https://api.umd.io/v1/courses/' + ",".join(classes)
-    response = pip._vendor.requests.get(http_request)
+    response = requests.get(http_request)
     json_data = json.loads(response.text)
-    # print(json_data)
+    print(json_data)
     return json_data
 
