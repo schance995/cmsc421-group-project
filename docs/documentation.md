@@ -17,7 +17,7 @@
 5. Crossover 
 * To do a `crossover`, we take two chromosomes and randomly find the crossover point. We switch the section numbers to the left of the crossover point. For ex, chromosome A = [1 2 5] and chromosome B = [2 1 3] and crossover point is 1 (there are two options since length is 3), we get A = [2 2 5] and B = [1 1 3] 
 6. Mutation 
-* To do a `mutation`, randomly pick a course to mutate on and change it's section number if it has more than 1 sections. For ex, A = [1 2 5] and we randomly pick to mutate on CMSC424 (there are three options to mutate on since three courses), let's say there are 3 different sections of CMSC424 then we will randomly pick either section 1 or section 3. So, A = [1 3 5] 
+* To do a `mutation`, randomly pick a section out of all the possible sections of each course to mutate on. For ex, A = [1, 2], where there are two courses selected by the user CMSC421 and CMSC422. If CMSC421 and CMSC422 have 2 sections each, we pick one section out of total 4 sections to mutate on. 
 7. Monitor the average fitness like we did with the ant project 
 
 
