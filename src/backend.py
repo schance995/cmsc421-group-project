@@ -13,7 +13,7 @@ def api_call(classes):
     http_request = 'https://api.umd.io/v1/courses/' + ",".join(classes)
     response = requests.get(http_request)
     json_data = json.loads(response.text)
-    print(json_data)
+    # print(json_data)
     return json_data
 
 
