@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-from backend import api_call
-from sga import sga
+from backend import get_courses
 
 def main():
     print('Type up to 7 classes (space or newline separated) and press Ctrl-D when you are done)')
@@ -12,7 +11,7 @@ def main():
         exit(1)
     print('Your classes are')
     print(*classes)
-    schedule = api_call(classes)
+    schedule = get_courses(classes)
     # TODO: run GA
     print('Your schedule is:')
     print(schedule)
