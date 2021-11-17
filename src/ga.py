@@ -75,14 +75,18 @@ class sga:
         # cut locn to right of position (hence subtract 1)
         locn = np.random.randint(0, self.stringLength - 1)
         tmp = np.copy(child1)       # save child1 copy, then do crossover
-        child1[locn+1:self.stringLength] = child2[locn+1:self.stringLength]
-        child2[locn+1:self.stringLength] = tmp[locn+1:self.stringLength]
+        # crossover the segment before the point
+        child1[:locn+1] = child2[:locn+1]
+        child2[:locn+1] = tmp[:locn+1]
         return child1, child2
 
-    def mutate(self, pop):            # bitwise point mutations
+    def mutate(self, pop, section_list):            # bitwise point mutations
         whereMutate = np.random.rand(np.shape(pop)[0], np.shape(pop)[1])
         whereMutate = np.where(whereMutate < self.pm)
-        pop[whereMutate] = 1 - pop[whereMutate]
+        for x, y in zip(whereMutate[0], whereMutate[1]):
+            my_list = list(range(1,section_list[y]+1))
+            my_list.remove(pop[x, y])
+            pop[x, y] = np.random.choice(my_list)
         return pop
 
     def runGA(self):     # run simple genetic algorithme
