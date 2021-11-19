@@ -1,31 +1,91 @@
 #!/usr/bin/env python3
 
-import json, requests 
+import json
+import requests
+from dataclasses import dataclass, field
+from typing import List
+
 
 def get_courses(course_list):
-    '''
+    """
     Return the json dump from the api call to umd.io
     Parameters:
     classes (list of strings): list of course ids
     Returns:
     A python data structure representing the json
-    '''
-    http_request = 'https://api.umd.io/v1/courses/' + ",".join(course_list)
+    """
+    http_request = "https://api.umd.io/v1/courses/" + ",".join(course_list)
     response = requests.get(http_request)
     json_data = json.loads(response.text)
     # print(json_data)
-    return json_data
+
+    # Parsing json into class definition
+    course_info = list()
+    for data in json_data:
+        course = CourseItem()
+        course.course_id = data["course_id"]
+        course.name = data["name"]
+        course.dept_id = data["dept_id"]
+        course.credits = int(data["credits"])
+
+        section_data = get_sections(data["course_id"])
+
+        for each_section in section_data:
+            section = SectionItem()
+            section.section_id = each_section["section_id"]
+            section.meetings = list()
+            for each_meeting in each_section["meetings"]:
+                meeting = Meeting()
+                meeting.days = each_meeting["days"]
+                meeting.start_time = each_meeting["start_time"]
+                meeting.end_time = each_meeting["end_time"]
+                section.meetings.append(meeting)
+
+            course.sections.append(section)
+
+        course_info.append(course)
+
+    # replaced return statement
+    return course_info
+
 
 def get_sections(course):
-    '''
+    """
     Return the json dump from the api call to umd.io
     Parameters:
     classes (string): string of course_id
     Returns:
     A python data structure representing the json
-    '''
-    http_request = 'https://api.umd.io/v1/courses/' + course + '/sections'
+    """
+    http_request = "https://api.umd.io/v1/courses/" + course + "/sections"
     response = requests.get(http_request)
     json_data = json.loads(response.text)
     # print(json_data)
     return json_data
+
+
+# class for meeting info of a section
+@dataclass
+class Meeting:
+    days: str = ""
+    start_time: str = ""
+    end_time: str = ""
+
+# class for section info of a course
+
+
+@dataclass
+class SectionItem:
+    section_id: str = ""
+    meetings: List[Meeting] = field(default_factory=list)
+
+# class for course info
+
+
+@dataclass
+class CourseItem:
+    course_id: str = ""
+    name: str = ""
+    dept_id: str = ""
+    credits: int = 0
+    sections: List[SectionItem] = field(default_factory=list)

@@ -3,6 +3,7 @@
 import sys
 from backend import get_courses
 
+
 def main():
     print('Type up to 7 classes (space or newline separated) and press Ctrl-D when you are done)')
     classes = [s.upper() for s in sys.stdin.read().split()]
@@ -15,6 +16,7 @@ def main():
     # TODO: run GA
     print('Your schedule is:')
     print(schedule)
+
 
 if __name__ == '__main__':
     main()
