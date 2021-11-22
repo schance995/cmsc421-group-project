@@ -33,6 +33,8 @@ def get_courses(course_list):
         for each_section in section_data:
             section = SectionItem()
             section.section_id = each_section["section_id"]
+            section.open_seats = each_section["open_seats"]
+
             section.meetings = list()
             for each_meeting in each_section["meetings"]:
                 meeting = Meeting()
@@ -77,6 +79,7 @@ class Meeting:
 @dataclass
 class SectionItem:
     section_id: str = ""
+    open_seats: str = ""
     meetings: List[Meeting] = field(default_factory=list)
 
 # class for course info
