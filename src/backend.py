@@ -2,9 +2,11 @@
 
 import json
 import requests
+import requests_cache
 from dataclasses import dataclass, field
 from typing import List
 
+requests_cache.install_cache('cmsc421_cache')
 
 def get_courses(course_list):
     """
@@ -65,6 +67,8 @@ def get_sections(course):
     # print(json_data)
     return json_data
 
+# def get_course_by_sections
+# https://api.umd.io/v1/courses/{course_ids}/sections/{section_ids}
 
 # class for meeting info of a section
 @dataclass
@@ -92,3 +96,5 @@ class CourseItem:
     dept_id: str = ""
     credits: int = 0
     sections: List[SectionItem] = field(default_factory=list)
+    def __repr__(self):
+        return '{} ({}) [{}]'.format(self.course_id, self.name, ', '.join([s.section_id.split('-')[1] for s in self.sections]))
