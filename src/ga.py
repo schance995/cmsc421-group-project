@@ -7,7 +7,7 @@ from config import config as cfg
 
 class sga:
 
-    def __init__(self):
+    def __init__(self, course_list):
         # stringLength: int, popSize: int, nGens: int,
         # prob. mutation pm: float; prob. crossover pc: float
 
@@ -15,7 +15,7 @@ class sga:
         fid = open("results.txt", "w")        
         self.fid = fid
         # number of bits in a chromosome
-        self.stringLength = cfg['string_length']   
+        self.string_length = cfg['string_length']   
         self.pop_size = cfg['population_size']
         # pop_size must be even
         if np.mod(self.pop_size, 2) == 0:           
@@ -27,8 +27,9 @@ class sga:
         # probability of crossover                      
         self.pc = cfg['prob_crossover']
         # max number of generations                       
-        self.num_gens = cfg['num_gens']                
-        self.pop = np.random.rand(self.popSize, self.stringLength)
+        self.num_gens = cfg['num_gens']    
+        self.course_list = course_list
+        self.pop = np.random.rand(self.pop_size, self.string_length)
         # create initial pop
         self.pop = np.where(self.pop < 0.5, 1, 0)  
         # fitness values for initial population
@@ -39,10 +40,10 @@ class sga:
         self.bestchrome = self.pop[self.bestloc,
                                    :]              # most fit chromosome
         # array of max fitness vals each generation
-        self.bestfitarray = np.zeros(self.nGens + 1)
+        self.bestfitarray = np.zeros(self.num_gens + 1)
         self.bestfitarray[0] = self.bestfit  # (+ 1 for init pop plus nGens)
         # array of mean fitness vals each generation
-        self.meanfitarray = np.zeros(self.nGens + 1)
+        self.meanfitarray = np.zeros(self.num_gens + 1)
         self.meanfitarray[0] = fitness.mean()
         fid.write("popSize: {}  nGens: {}  pm: {}  pc: {}\n".format(
             self.pop_size, self.num_gens, self.pm, self.pc))
@@ -52,12 +53,29 @@ class sga:
         fid.write("Best initially:\n  {} at locn {}, fitness = {}\n".format(
             self.bestchrome, self.bestloc, self.bestfit))
 
-    # example fitness function   *** Must be modified for an application problem ***
-    def fitFcn(self, pop):          # compute population fitness values
+    # compute population fitness values
+    # TODO
+    def fitFcn(self, pop):          
         # fitness is currently the number of 1's in chromosome
         fitness = sum(pop.T)
         return fitness
 
+    # extract section information from course list
+    def get_all_sections(self):
+        section_list = [course.sections for course in self.course_list]
+        return section_list
+
+    # get the length of all courses
+    def get_all_section_length(self):
+        sections = self.get_all_sections()
+        return [len(course) for course in sections]
+
+    # initialize the population by randomly select sections from the section list
+    def init_population(self):
+        section_lengths = self.get_all_section_length()
+        
+        
+    
     # conduct tournaments to select two offspring
     def tournament(self, pop, fitness, popsize):  # fitness array, pop size
         # select first parent par1
@@ -99,6 +117,9 @@ class sga:
         return pop
 
     def runGA(self):     # run simple genetic algorithme
+        section_list = self.get_all_section_length()
+        return section_list
+        exit()
         fid = self.fid   # output file
         for gen in range(self.nGens):  # for each generation gen
             # Compute fitness of the pop

@@ -2,7 +2,7 @@
 
 import sys
 from backend import get_courses
-
+from ga import sga
 
 def main():
     print('Type up to 7 classes (space or newline separated) and press Ctrl-D when you are done)')
@@ -13,9 +13,11 @@ def main():
     print('Your classes are')
     print(*classes)
     schedule = get_courses(classes)
-    # TODO: run GA
     print('Your schedule is:')
     print(schedule)
+    genetic_algorithm = sga(schedule)
+    result = genetic_algorithm.runGA()
+    print(f'\n\n{result}')
 
 
 if __name__ == '__main__':
