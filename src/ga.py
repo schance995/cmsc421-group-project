@@ -15,7 +15,6 @@ class sga:
         fid = open("results.txt", "w")        
         self.fid = fid
         # number of bits in a chromosome
-        self.string_length = cfg['string_length']   
         self.pop_size = cfg['population_size']
         # pop_size must be even
         if np.mod(self.pop_size, 2) == 0:           
@@ -29,10 +28,13 @@ class sga:
         # max number of generations                       
         self.num_gens = cfg['num_gens']    
         self.course_list = course_list
+        self.string_length = len(self.course_list) 
         self.pop = np.random.rand(self.pop_size, self.string_length)
-        # create initial pop
-        self.pop = np.where(self.pop < 0.5, 1, 0)  
-        # fitness values for initial population
+        self.section_length = self.get_all_section_length()
+        
+        # # create initial pop
+        # self.pop = np.where(self.pop < 0.5, 1, 0)  
+        # # fitness values for initial population
         fitness = self.fitFcn(self.pop)
         self.bestfit = fitness.max()       # fitness of (first) most fit chromosome
         self.bestloc = np.where(fitness == self.bestfit)[
@@ -70,10 +72,14 @@ class sga:
         sections = self.get_all_sections()
         return [len(course) for course in sections]
 
-    # initialize the population by randomly select sections from the section list
+    # initialize the a chromosome by randomly select sections from section list
+    def init_chrom(self):
+        return [np.random.randint(section) for section in self.section_length]
+
+    # initialize the population by repeatedly call init_chrom to the size of population
     def init_population(self):
-        section_lengths = self.get_all_section_length()
-        
+        return [self.init_chrom() for chrom in range(self.pop_size)]
+
         
     
     # conduct tournaments to select two offspring
@@ -116,12 +122,14 @@ class sga:
             pop[x, y] = np.random.choice(my_list)
         return pop
 
-    def runGA(self):     # run simple genetic algorithme
+    # program driver: runs the genetic algorithm
+    def runGA(self):    
         section_list = self.get_all_section_length()
-        return section_list
-        exit()
-        fid = self.fid   # output file
-        for gen in range(self.nGens):  # for each generation gen
+        self.pop = self.init_population()
+        # output file
+        fid = self.fid   
+        # process generation by generation
+        for gen in range(self.num_gens):  
             # Compute fitness of the pop
             fitness = self.fitFcn(self.pop)  # measure fitness
             # initialize new population
