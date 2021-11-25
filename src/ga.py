@@ -3,25 +3,34 @@
 
 import pylab as pl
 import numpy as np
-
+from config import config as cfg
 
 class sga:
 
-    def __init__(self, stringLength, popSize, nGens, pm, pc):
+    def __init__(self):
         # stringLength: int, popSize: int, nGens: int,
         # prob. mutation pm: float; prob. crossover pc: float
-        fid = open("results.txt", "w")        # open, initialize output file
+
+        # open, initialize output file
+        fid = open("results.txt", "w")        
         self.fid = fid
-        self.stringLength = stringLength   # number of bits in a chromosome
-        if np.mod(popSize, 2) == 0:           # popSize must be even
-            self.popSize = popSize
+        # number of bits in a chromosome
+        self.stringLength = cfg['string_length']   
+        self.pop_size = cfg['population_size']
+        # pop_size must be even
+        if np.mod(self.pop_size, 2) == 0:           
+            self.pop_size = self.pop_size
         else:
-            self.popSize = popSize+1
-        self.pm = pm                       # probability of mutation
-        self.pc = pc                       # probability of crossover
-        self.nGens = nGens                 # max number of generations
+            self.pop_size = self.pop_size+1
+        # probability of mutation
+        self.pm = cfg['prob_mutation']
+        # probability of crossover                      
+        self.pc = cfg['prob_crossover']
+        # max number of generations                       
+        self.num_gens = cfg['num_gens']                
         self.pop = np.random.rand(self.popSize, self.stringLength)
-        self.pop = np.where(self.pop < 0.5, 1, 0)  # create initial pop
+        # create initial pop
+        self.pop = np.where(self.pop < 0.5, 1, 0)  
         # fitness values for initial population
         fitness = self.fitFcn(self.pop)
         self.bestfit = fitness.max()       # fitness of (first) most fit chromosome
@@ -36,9 +45,9 @@ class sga:
         self.meanfitarray = np.zeros(self.nGens + 1)
         self.meanfitarray[0] = fitness.mean()
         fid.write("popSize: {}  nGens: {}  pm: {}  pc: {}\n".format(
-            popSize, nGens, pm, pc))
+            self.pop_size, self.num_gens, self.pm, self.pc))
         fid.write("initial population, fitnesses: (up to 1st 100 chromosomes)\n")
-        for c in range(min(100, popSize)):   # for each of first 100 chromosomes
+        for c in range(min(100, self.pop_size)):   # for each of first 100 chromosomes
             fid.write("  {}  {}\n".format(self.pop[c, :], fitness[c]))
         fid.write("Best initially:\n  {} at locn {}, fitness = {}\n".format(
             self.bestchrome, self.bestloc, self.bestfit))
