@@ -1,4 +1,0 @@
-popSize: 6  nGens: 10  pm: 0.3  pc: 0.3
-initial population, fitnesses: (up to 1st 100 chromosomes)
-  [0.25285527 0.67005413]  2.8385783876204638
-  [0.98155779 0.28848547]  3.3816457898502303
