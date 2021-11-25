@@ -1,21 +1,21 @@
 # Simple Genetic Algorithm
 # source: https://www.cs.umd.edu/~reggia/cmsc421/papers/SGA.py
 
+from numpy.core.fromnumeric import shape
 import pylab as pl
 import numpy as np
 from config import config as cfg
 
 class sga:
 
+    # note:   Population > Group > Chromosome
     def __init__(self, course_list):
         # stringLength: int, popSize: int, nGens: int,
         # prob. mutation pm: float; prob. crossover pc: float
 
-        # open, initialize output file
-        fid = open("results.txt", "w")        
-        self.fid = fid
-        # number of bits in a chromosome
+        # the size of population, group
         self.pop_size = cfg['population_size']
+        self.group_size = cfg["group_size"]
         # pop_size must be even
         if np.mod(self.pop_size, 2) == 0:           
             self.pop_size = self.pop_size
@@ -29,37 +29,17 @@ class sga:
         self.num_gens = cfg['num_gens']    
         self.course_list = course_list
         self.string_length = len(self.course_list) 
-        self.pop = np.random.rand(self.pop_size, self.string_length)
         self.section_length = self.get_all_section_length()
-        
-        # # create initial pop
-        # self.pop = np.where(self.pop < 0.5, 1, 0)  
-        # # fitness values for initial population
-        fitness = self.fitFcn(self.pop)
-        self.bestfit = fitness.max()       # fitness of (first) most fit chromosome
-        self.bestloc = np.where(fitness == self.bestfit)[
-            0][0]  # most fit chromosome locn
-        self.bestchrome = self.pop[self.bestloc,
-                                   :]              # most fit chromosome
-        # array of max fitness vals each generation
-        self.bestfitarray = np.zeros(self.num_gens + 1)
-        self.bestfitarray[0] = self.bestfit  # (+ 1 for init pop plus nGens)
-        # array of mean fitness vals each generation
-        self.meanfitarray = np.zeros(self.num_gens + 1)
-        self.meanfitarray[0] = fitness.mean()
-        fid.write("popSize: {}  nGens: {}  pm: {}  pc: {}\n".format(
-            self.pop_size, self.num_gens, self.pm, self.pc))
-        fid.write("initial population, fitnesses: (up to 1st 100 chromosomes)\n")
-        for c in range(min(100, self.pop_size)):   # for each of first 100 chromosomes
-            fid.write("  {}  {}\n".format(self.pop[c, :], fitness[c]))
-        fid.write("Best initially:\n  {} at locn {}, fitness = {}\n".format(
-            self.bestchrome, self.bestloc, self.bestfit))
+
+        # population initialization
+        self.pop = self.init_population()
+
 
     # compute population fitness values
     # TODO
     def fitFcn(self, pop):          
-        # fitness is currently the number of 1's in chromosome
-        fitness = sum(pop.T)
+        # fitness is currently the sum of chromosome
+        fitness = np.sum(np.sum(pop, axis = -1), -1)
         return fitness
 
     # extract section information from course list
@@ -78,10 +58,26 @@ class sga:
 
     # initialize the population by repeatedly call init_chrom to the size of population
     def init_population(self):
-        return [self.init_chrom() for chrom in range(self.pop_size)]
-
+        init_pop = [[self.init_chrom() for chrom in range(self.group_size)] for group in range(self.pop_size)]
+        # initialize records
+        # fitness values for initial population
+        fitness = self.fitFcn(init_pop)
+        # current best fitness of the first group
+        self.best_fit_group_score = max(fitness)
+        best_loc = np.argwhere(fitness == self.best_fit_group_score)[0][0]
+        # group with the best fitness      
+        self.best_fit_group = init_pop[best_loc]   
+        # array of max fitness vals each generation
+        self.bestfitarray = np.zeros(self.num_gens + 1)
+        self.bestfitarray[0] = self.best_fit_group_score  # (+ 1 for init pop plus nGens)
+        # array of mean fitness vals each generation
+        self.meanfitarray = np.zeros(self.num_gens + 1)
+        self.meanfitarray[0] = fitness.mean()
         
-    
+        self.overall_best_score = self.best_fit_group_score
+        self.overall_best_group = self.best_fit_group
+        return init_pop
+
     # conduct tournaments to select two offspring
     def tournament(self, pop, fitness, popsize):  # fitness array, pop size
         # select first parent par1
@@ -104,79 +100,65 @@ class sga:
             par2 = cand2
         return par1, par2
 
-    def xover(self, child1, child2):    # single point crossover
+    # single point crossover: we consider each group as a large "chromosome"
+    def xover(self, group1, group2):
+        group1, group2 = (np.array(group1),np.array(group2))  
+        shape_of_group = group1.shape
+        group1, group2 = group1.flatten(), group2.flatten()
         # cut locn to right of position (hence subtract 1)
-        locn = np.random.randint(0, self.stringLength - 1)
-        tmp = np.copy(child1)       # save child1 copy, then do crossover
+        locn = np.random.randint(0, len(group1) - 1)
+        tmp = np.copy(group1)       # save child1 copy, then do crossover
         # crossover the segment before the point
-        child1[:locn+1] = child2[:locn+1]
-        child2[:locn+1] = tmp[:locn+1]
-        return child1, child2
+        group1[:locn+1] = group2[:locn+1]
+        group2[:locn+1] = tmp[:locn+1]
+        group1, group2 = np.reshape(group1, shape_of_group), np.reshape(group2, shape_of_group)
+        return group1, group2
 
     def mutate(self, pop, section_list):            # bitwise point mutations
-        whereMutate = np.random.rand(np.shape(pop)[0], np.shape(pop)[1])
-        whereMutate = np.where(whereMutate < self.pm)
-        for x, y in zip(whereMutate[0], whereMutate[1]):
-            my_list = list(range(1,section_list[y]+1))
-            my_list.remove(pop[x, y])
-            pop[x, y] = np.random.choice(my_list)
+        mutate_rand_map = np.random.rand(*pop.shape)
+        mutate_location = np.where(mutate_rand_map < self.pm)
+        for x, y, z in zip(mutate_location[0], mutate_location[1], mutate_location[2]):
+            my_list = list(range(section_list[z]))
+            my_list.remove(pop[x, y, z])
+            pop[x, y, z] = np.random.choice(my_list)
         return pop
 
     # program driver: runs the genetic algorithm
     def runGA(self):    
-        section_list = self.get_all_section_length()
-        self.pop = self.init_population()
-        # output file
-        fid = self.fid   
         # process generation by generation
         for gen in range(self.num_gens):  
             # Compute fitness of the pop
             fitness = self.fitFcn(self.pop)  # measure fitness
             # initialize new population
-            newPop = np.zeros((self.popSize, self.stringLength), dtype='int64')
+            newPop = np.zeros((self.pop_size, self.group_size, self.string_length), dtype='int64')
             # create new population newPop via selection and crossovers with prob pc
             # create popSize/2 pairs of offspring
-            for pair in range(0, self.popSize, 2):
+            for pair in range(0, self.pop_size, 2):
                 # tournament selection of two parent indices
-                p1, p2 = self.tournament(
-                    self.pop, fitness, self.popSize)  # p1, p2 integers
-                child1 = np.copy(self.pop[p1, :])       # child1 for newPop
-                child2 = np.copy(self.pop[p2, :])       # child2 for newPop
-                if np.random.rand() < self.pc:                 # with prob self.pc
-                    child1, child2 = self.xover(child1, child2)  # do crossover
+                p1, p2 = self.tournament(self.pop, fitness, self.pop_size)  # p1, p2 integers
+                group1 = np.copy(self.pop[p1])       
+                group2 = np.copy(self.pop[p2])      
+                # if np.random.rand() < self.pc:       
+                if True:           
+                    group1, group2 = self.xover(group1, group2)  
                 # add offspring to newPop
-                newPop[pair, :] = child1
-                newPop[pair + 1, :] = child2
+                newPop[pair, :] = group1
+                newPop[pair + 1, :] = group2
             # mutations to population with probability pm
-            newPop = self.mutate(newPop)
-            self.pop = newPop
-            fitness = self.fitFcn(self.pop)    # fitness values for population
-            self.bestfit = fitness.max()       # fitness of (first) most fit chromosome
+            new_pop = self.mutate(newPop, self.section_length)
+            self.pop = new_pop
+            new_fitness = self.fitFcn(self.pop)    # fitness values for new population
+            self.best_fit_group_score = max(new_fitness)
+            best_loc = np.argwhere(new_fitness == self.best_fit_group_score)[0][0]
             # save best fitness for plotting
-            self.bestfitarray[gen + 1] = self.bestfit
+            self.bestfitarray[gen + 1] = self.best_fit_group_score
             # save mean fitness for plotting
             self.meanfitarray[gen + 1] = fitness.mean()
-            self.bestloc = np.where(fitness == self.bestfit)[
-                0][0]  # most fit chromosome locn
-            self.bestchrome = self.pop[self.bestloc,
-                                       :]              # most fit chromosome
+
+            if self.best_fit_group_score > self.overall_best_score:
+                self.overall_best_score = self.best_fit_group_score 
+                self.overall_best_group = self.best_fit_group
             if (np.mod(gen, 10) == 0):            # print epoch, max fitness
-                print("generation: ", gen+1, "max fitness: ", self.bestfit)
-        fid.write("\nfinal population, fitnesses: (up to 1st 100 chromosomes)\n")
-        fitness = self.fitFcn(self.pop)         # compute population fitnesses
-        self.bestfit = fitness.max()            # fitness of (first) most fit chromosome
-        self.bestloc = np.where(fitness == self.bestfit)[
-            0][0]  # most fit chromosome locn
-        self.bestchrome = self.pop[self.bestloc,
-                                   :]              # most fit chromosome
-        for c in range(min(100, self.popSize)):  # for each of first 100 chromosomes
-            fid.write("  {}  {}\n".format(self.pop[c, :], fitness[c]))
-        fid.write("Best:\n  {} at locn {}, fitness: {}\n\n".format(
-            self.bestchrome, self.bestloc, self.bestfit))
-        fid.close()
-        pl.ion()      # activate interactive plotting
-        pl.xlabel("Generation")
-        pl.ylabel("Fitness of Best, Mean Chromosome")
-        pl.plot(self.bestfitarray, 'kx-', self.meanfitarray, 'kx--')
-        pl.show()
-        pl.pause(0)
+                print("generation: ", gen+1, "max fitness: ", self.best_fit_group_score)
+        return self.overall_best_score, self.overall_best_group
+

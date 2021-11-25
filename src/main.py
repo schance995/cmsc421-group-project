@@ -13,11 +13,12 @@ def main():
     print('Your classes are')
     print(*classes)
     schedule = get_courses(classes)
-    print('Your schedule is:')
-    print(schedule)
+    # print(f'Your schedule is:{schedule}')
     genetic_algorithm = sga(schedule)
-    result = genetic_algorithm.runGA()
-    print(f'\n\n{result}')
+    best_score, best_batch_schedule = genetic_algorithm.runGA()
+    print('--------------------')
+    print(f'Overall best fitness score is: {best_score}')
+    print(f'Your schedules are:\n {best_batch_schedule}')
 
 
 if __name__ == '__main__':
