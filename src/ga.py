@@ -37,7 +37,7 @@ class sga:
 
     # compute population fitness values
     # TODO
-    def fitFcn(self, pop):          
+    def fitness_function(self, pop):          
         # fitness is currently the sum of chromosome
         fitness = np.sum(np.sum(pop, axis = -1), -1)
         return fitness
@@ -61,7 +61,7 @@ class sga:
         init_pop = [[self.init_chrom() for chrom in range(self.group_size)] for group in range(self.pop_size)]
         # initialize records
         # fitness values for initial population
-        fitness = self.fitFcn(init_pop)
+        fitness = self.fitness_function(init_pop)
         # current best fitness of the first group
         self.best_fit_group_score = max(fitness)
         best_loc = np.argwhere(fitness == self.best_fit_group_score)[0][0]
@@ -100,7 +100,7 @@ class sga:
             par2 = cand2
         return par1, par2
 
-    # single point crossover: we consider each group as a large "chromosome"
+    # single point crossover: we consider each group as a large "chromosome". i.e. Apply crossover on group.
     def xover(self, group1, group2):
         group1, group2 = (np.array(group1),np.array(group2))  
         shape_of_group = group1.shape
@@ -113,8 +113,9 @@ class sga:
         group2[:locn+1] = tmp[:locn+1]
         group1, group2 = np.reshape(group1, shape_of_group), np.reshape(group2, shape_of_group)
         return group1, group2
-
-    def mutate(self, pop, section_list):            # bitwise point mutations
+    
+    # Consider all chromosome in a group as a huge chromosome. i.e. Apply bitwise mutation on group.
+    def mutate(self, pop, section_list):            
         mutate_rand_map = np.random.rand(*pop.shape)
         mutate_location = np.where(mutate_rand_map < self.pm)
         for x, y, z in zip(mutate_location[0], mutate_location[1], mutate_location[2]):
@@ -128,7 +129,7 @@ class sga:
         # process generation by generation
         for gen in range(self.num_gens):  
             # Compute fitness of the pop
-            fitness = self.fitFcn(self.pop)  # measure fitness
+            fitness = self.fitness_function(self.pop)  # measure fitness
             # initialize new population
             newPop = np.zeros((self.pop_size, self.group_size, self.string_length), dtype='int64')
             # create new population newPop via selection and crossovers with prob pc
@@ -147,7 +148,7 @@ class sga:
             # mutations to population with probability pm
             new_pop = self.mutate(newPop, self.section_length)
             self.pop = new_pop
-            new_fitness = self.fitFcn(self.pop)    # fitness values for new population
+            new_fitness = self.fitness_function(self.pop)    # fitness values for new population
             self.best_fit_group_score = max(new_fitness)
             best_loc = np.argwhere(new_fitness == self.best_fit_group_score)[0][0]
             # save best fitness for plotting
