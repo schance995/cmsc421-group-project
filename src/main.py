@@ -3,6 +3,7 @@
 import sys
 import re
 from backend import get_courses
+from ga import sga
 
 def find_indices(lst, condition):
     return [i for i, elem in enumerate(lst) if condition(elem)]
@@ -38,9 +39,13 @@ def main():
         course_id_index = find_indices(schedule, lambda course_item: course_item.course_id == course_id)[0]
         # select sections that the user specified
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
-    # TODO: run GA
-    print('Your schedule is:')
-    print(*schedule, sep='\n')
+    # runs genetic_algorithm
+    genetic_algorithm = sga(schedule)
+    best_score, best_batch_schedule = genetic_algorithm.runGA()
+
+    print('--------------------')
+    print(f'Overall best fitness score is: {best_score}')
+    print(f'Your schedules are:\n {best_batch_schedule}')
 
 if __name__ == '__main__':
     main()
