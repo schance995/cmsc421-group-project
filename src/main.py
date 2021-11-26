@@ -30,6 +30,7 @@ def main():
     elif len(classes) == 0:
         print('Enter at least 1 class')
         exit(1)
+        
     schedule = get_courses(classes)
     for course_id, sections in classes_with_section.items():
         # collect all sections as a set
@@ -38,10 +39,9 @@ def main():
         course_id_index = find_indices(schedule, lambda course_item: course_item.course_id == course_id)[0]
         # select sections that the user specified
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
-
-    # print(f'Your schedule is:{schedule}')
     genetic_algorithm = sga(schedule)
     best_score, best_batch_schedule = genetic_algorithm.runGA()
+
     print('--------------------')
     print(f'Overall best fitness score is: {best_score}')
     print(f'Your schedules are:\n {best_batch_schedule}')
