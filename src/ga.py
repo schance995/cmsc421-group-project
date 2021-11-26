@@ -121,7 +121,8 @@ class sga:
         for x, y, z in zip(mutate_location[0], mutate_location[1], mutate_location[2]):
             my_list = list(range(section_list[z]))
             my_list.remove(pop[x, y, z])
-            pop[x, y, z] = np.random.choice(my_list)
+            if len(my_list) != 0:
+                pop[x, y, z] = np.random.choice(my_list)
         return pop
 
     # program driver: runs the genetic algorithm

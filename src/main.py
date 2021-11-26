@@ -39,6 +39,7 @@ def main():
         course_id_index = find_indices(schedule, lambda course_item: course_item.course_id == course_id)[0]
         # select sections that the user specified
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
+    # runs genetic_algorithm
     genetic_algorithm = sga(schedule)
     best_score, best_batch_schedule = genetic_algorithm.runGA()
 
