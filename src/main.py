@@ -30,7 +30,7 @@ def main():
     elif len(classes) == 0:
         print('Enter at least 1 class')
         exit(1)
-        
+
     schedule = get_courses(classes)
     for course_id, sections in classes_with_section.items():
         # collect all sections as a set
