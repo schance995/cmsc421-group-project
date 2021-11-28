@@ -178,6 +178,8 @@ class sga:
         plt.title(f'Best Fitness and Mean Fitness Score VS Epochs ')
         plt.plot(x, self.bestfitarray, label = 'Best Fitness Score')
         plt.plot(x, self.meanfitarray, label = 'Average Fitness Score')
+        plt.xlabel('Epoch Number')
+        plt.ylabel('Fitness Score')
         plt.legend()
         plt.savefig(self.graph_output/(f'pop-size={self.pop_size}_group-size={self.group_size}_pm={self.pm}_pc={self.pc}.jpg'))
         return self.overall_best_score, self.overall_best_group
