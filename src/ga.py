@@ -147,8 +147,7 @@ class sga:
                 p1, p2 = self.tournament(self.pop, fitness, self.pop_size)  # p1, p2 integers
                 group1 = np.copy(self.pop[p1])       
                 group2 = np.copy(self.pop[p2])      
-                # if np.random.rand() < self.pc:       
-                if True:           
+                if np.random.rand() < self.pc:               
                     group1, group2 = self.xover(group1, group2)  
                 # add offspring to newPop
                 newPop[pair, :] = group1
