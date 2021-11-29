@@ -2,15 +2,16 @@
 # source: https://www.cs.umd.edu/~reggia/cmsc421/papers/SGA.py
 
 from numpy.core.fromnumeric import shape
-import pylab as pl
+import matplotlib.pyplot as plt
 import numpy as np
 from config import config as cfg
+import pathlib
 
 
 class sga:
 
     # note:   Population > Group > Chromosome
-    def __init__(self, course_list):
+    def __init__(self, course_list, graph_dir="graph"):
         # stringLength: int, popSize: int, nGens: int,
         # prob. mutation pm: float; prob. crossover pc: float
 
@@ -28,9 +29,15 @@ class sga:
         self.pc = cfg['prob_crossover']
         # max number of generations
         self.num_gens = cfg['num_gens']
+        # get the course list
         self.course_list = course_list
+        # set the length of each string
         self.string_length = len(self.course_list)
+        # get the size of each section
         self.section_length = self.get_all_section_length()
+        # get the output directory of graph and if it doesn't exist, create one.
+        self.graph_output = pathlib.Path(graph_dir)
+        self.graph_output.mkdir(parents=True, exist_ok=True)
 
         # population initialization
         self.pop = self.init_population()
@@ -218,8 +225,7 @@ class sga:
                     self.pop, fitness, self.pop_size)  # p1, p2 integers
                 group1 = np.copy(self.pop[p1])
                 group2 = np.copy(self.pop[p2])
-                # if np.random.rand() < self.pc:
-                if True:
+                if np.random.rand() < self.pc:
                     group1, group2 = self.xover(group1, group2)
                 # add offspring to newPop
                 newPop[pair, :] = group1
@@ -243,4 +249,18 @@ class sga:
             if (np.mod(gen, 10) == 0):            # print epoch, max fitness
                 print("generation: ", gen+1, "max fitness: ",
                       self.best_fit_group_score)
+        # save graph
+        print(f'Saving Graph')
+        x = np.arange(self.num_gens + 1)
+        # print(f'shape of x: {x.shape}')
+        # print(f'shape of best array: {self.bestfitarray.shape}')
+        # print(f'shape of average array:{self.meanfitarray.shape}')
+        plt.title(f'Best Fitness and Mean Fitness Score VS Epochs ')
+        plt.plot(x, self.bestfitarray, label='Best Fitness Score')
+        plt.plot(x, self.meanfitarray, label='Average Fitness Score')
+        plt.xlabel('Epoch Number')
+        plt.ylabel('Fitness Score')
+        plt.legend()
+        plt.savefig(self.graph_output /
+                    (f'pop-size={self.pop_size}_group-size={self.group_size}_pm={self.pm}_pc={self.pc}.jpg'))
         return self.overall_best_score, self.overall_best_group
