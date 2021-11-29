@@ -8,6 +8,7 @@ from typing import List
 
 requests_cache.install_cache('cmsc421_cache')
 
+
 def get_courses(course_list):
     """
     Return the json dump from the api call to umd.io
@@ -41,8 +42,9 @@ def get_courses(course_list):
             for each_meeting in each_section["meetings"]:
                 meeting = Meeting()
                 meeting.days = each_meeting["days"]
-                meeting.start_time = each_meeting["start_time"]
-                meeting.end_time = each_meeting["end_time"]
+                meeting.start_time = convert_str_to_int(
+                    each_meeting["start_time"])
+                meeting.end_time = convert_str_to_int(each_meeting["end_time"])
                 section.meetings.append(meeting)
 
             course.sections.append(section)
@@ -70,12 +72,34 @@ def get_sections(course):
 # def get_course_by_sections
 # https://api.umd.io/v1/courses/{course_ids}/sections/{section_ids}
 
+
+def convert_str_to_int(str):
+    # convert string time to int time so that we can sort the schedule by time
+
+    time = 0
+    idx_colon = str.find(":")
+    hours = int(str[:idx_colon])
+    idx_m = str.find("m")
+    minutes = int(str[idx_colon+1: idx_m-1])
+
+    if hours == 12:
+        hours = 0
+    if "pm" in str:
+        hours += 12
+
+    time += hours*60
+    time += minutes
+
+    return time
+
 # class for meeting info of a section
+
+
 @dataclass
 class Meeting:
     days: str = ""
-    start_time: str = ""
-    end_time: str = ""
+    start_time: int = 0
+    end_time: int = 0
 
 # class for section info of a course
 
@@ -96,5 +120,6 @@ class CourseItem:
     dept_id: str = ""
     credits: int = 0
     sections: List[SectionItem] = field(default_factory=list)
+
     def __repr__(self):
         return '{} ({}) [{}]'.format(self.course_id, self.name, ', '.join([s.section_id.split('-')[1] for s in self.sections]))
