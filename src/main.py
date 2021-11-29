@@ -41,11 +41,12 @@ def main():
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
     # runs genetic_algorithm
     genetic_algorithm = sga(schedule)
-    best_score, best_batch_schedule = genetic_algorithm.runGA()
+    best_score, best_batch_schedule,best_batch_schedule_decoded = genetic_algorithm.runGA()
 
     print('--------------------')
     print(f'Overall best fitness score is: {best_score}')
     print(f'Your schedules are:\n {best_batch_schedule}')
+    print(f'Your schedules are (with section_id):\n {best_batch_schedule_decoded}')
 
 if __name__ == '__main__':
     main()
