@@ -263,4 +263,13 @@ class sga:
         plt.legend()
         plt.savefig(self.graph_output /
                     (f'pop-size={self.pop_size}_group-size={self.group_size}_pm={self.pm}_pc={self.pc}.jpg'))
-        return self.overall_best_score, self.overall_best_group
+        # convert the section index of each course into section ids for the final result 
+        decode_overall_best_group = []
+        for group in self.overall_best_group:
+            course_index = 0 
+            decode_schedule_section = [] 
+            for section_num in group: 
+                decode_schedule_section.append(self.course_list[course_index].sections[section_num].section_id)
+                course_index = course_index + 1
+            decode_overall_best_group.append(decode_schedule_section)
+        return self.overall_best_score, self.overall_best_group, decode_overall_best_group
