@@ -91,6 +91,23 @@ class sga:
             self.is_possible_course_by_day(days_dict["W"]) and self.is_possible_course_by_day(days_dict["Th"]) and \
             self.is_possible_course_by_day(days_dict["F"])
 
+    # count the number of class in the morning on a specific day
+    def prefer_morning_by_day(self, intervals) -> int:
+        new_intervals = sorted(intervals, key=lambda x: x[0])
+        count = 0
+        for i in range(0, len(new_intervals)):
+            # Here, 720 is equal to noon(12:00pm)
+            # all times are converted into military format when they were first processed in the backend.
+            if new_intervals[i][0] <= 720:
+                count += 1
+        return count
+
+    # add weights given that a user prefers classes in the morning
+    def prefer_morning(self, days_dict) -> int:
+        return self.prefer_morning_by_day(days_dict["M"]) and self.prefer_morning_by_day(days_dict["Tu"]) and \
+            self.prefer_morning_by_day(days_dict["W"]) and self.prefer_morning_by_day(days_dict["Th"]) and \
+            self.prefer_morning_by_day(days_dict["F"])
+
     # compute population fitness values
     def fitness_function(self, pop):
 
@@ -115,6 +132,9 @@ class sga:
                 # check if current group(= schedule) is possible
                 if self.is_possible_group(days_dict):
                     group_count += 1
+
+                    # Uncomment following line if you would like to give a variation
+                    # group_count += self.prefer_morning(days_dict)
 
             # get average
             group_avg = group_count / self.group_size
@@ -263,13 +283,14 @@ class sga:
         plt.legend()
         plt.savefig(self.graph_output /
                     (f'pop-size={self.pop_size}_group-size={self.group_size}_pm={self.pm}_pc={self.pc}.jpg'))
-        # convert the section index of each course into section ids for the final result 
+        # convert the section index of each course into section ids for the final result
         decode_overall_best_group = []
         for group in self.overall_best_group:
-            course_index = 0 
-            decode_schedule_section = [] 
-            for section_num in group: 
-                decode_schedule_section.append(self.course_list[course_index].sections[section_num].section_id)
+            course_index = 0
+            decode_schedule_section = []
+            for section_num in group:
+                decode_schedule_section.append(
+                    self.course_list[course_index].sections[section_num].section_id)
                 course_index = course_index + 1
             decode_overall_best_group.append(decode_schedule_section)
         return self.overall_best_score, self.overall_best_group, decode_overall_best_group
