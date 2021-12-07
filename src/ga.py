@@ -116,6 +116,7 @@ class sga:
 
         for p in pop:
             group_count = 0
+            open_seats_count = 0
             for group_idx in range(self.group_size):
 
                 # get section indices from group
@@ -125,7 +126,9 @@ class sga:
                 # get section object
                 for idx, val in enumerate(section_in_each_group):
                     section_obj_list.append(sections[idx][val])
-
+                    # counts the number of open seats in the section 
+                    if int(sections[idx][val].open_seats) > 0:
+                        open_seats_count += 1
                 # split meeting info by days
                 days_dict = self.get_sections_by_days(section_obj_list)
 
@@ -135,10 +138,10 @@ class sga:
 
                     # Uncomment following line if you would like to give a variation
                     # group_count += self.prefer_morning(days_dict)
-
+                
             # get average
             group_avg = group_count / self.group_size
-            fitness.append(group_avg)
+            fitness.append(0.6 * group_avg + 0.4 * open_seats_count)
 
         return np.array(fitness)
 
