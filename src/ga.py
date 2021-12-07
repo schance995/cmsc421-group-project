@@ -11,7 +11,7 @@ import pathlib
 class sga:
 
     # note:   Population > Group > Chromosome
-    def __init__(self, course_list, graph_dir="graph"):
+    def __init__(self, course_list, time_exclusion, graph_dir="graph"):
         # stringLength: int, popSize: int, nGens: int,
         # prob. mutation pm: float; prob. crossover pc: float
 
@@ -31,6 +31,8 @@ class sga:
         self.num_gens = cfg['num_gens']
         # get the course list
         self.course_list = course_list
+        # get the time exclusions
+        self.time_exclusion = time_exclusion
         # set the length of each string
         self.string_length = len(self.course_list)
         # get the size of each section
@@ -107,6 +109,18 @@ class sga:
         return self.prefer_morning_by_day(days_dict["M"]) and self.prefer_morning_by_day(days_dict["Tu"]) and \
             self.prefer_morning_by_day(days_dict["W"]) and self.prefer_morning_by_day(days_dict["Th"]) and \
             self.prefer_morning_by_day(days_dict["F"])
+        
+    # count the number of times each section doesn't falls into the excluded time frame
+    def check_exclusion(self, days_dict) -> int:
+        count = 0
+        for days in days_dict:
+            for i in range(0, len(days_dict[days])):
+                for j in range(0, len(self.time_exclusion[days])):
+                    if days_dict[days][i][0] >= self.time_exclusion[days][j][1] or \
+                       days_dict[days][i][1] <= self.time_exclusion[days][j][0]:
+                        count += 1
+        return count 
+                   
 
     # compute population fitness values
     def fitness_function(self, pop):
@@ -130,7 +144,7 @@ class sga:
                     if int(sections[idx][val].open_seats) > 0:
                         open_seats_count += 1
                 # split meeting info by days
-                days_dict = self.get_sections_by_days(section_obj_list)
+                days_dict = self.get_sections_by_days(section_obj_list)           
 
                 # check if current group(= schedule) is possible
                 if self.is_possible_group(days_dict):
@@ -141,7 +155,7 @@ class sga:
                 
             # get average
             group_avg = group_count / self.group_size
-            fitness.append(0.6 * group_avg + 0.4 * open_seats_count)
+            fitness.append(0.6 * group_avg + 0.4 * open_seats_count + 0.5 * self.check_exclusion(days_dict))
 
         return np.array(fitness)
 
