@@ -18,6 +18,12 @@ def main():
     print('Classes are not case sensitive, time exclusions are.')
     classes = []
     classes_with_section = {}
+    days_dict = dict()
+    days_dict["M"] = []
+    days_dict["Tu"] = []
+    days_dict["W"] = []
+    days_dict["Th"] = []
+    days_dict["F"] = []
 
     # regex match
     p = re.compile(r'(?P<course>[A-Z]{4}[0-9]{3}[A-Z]?)(?P<section>-[0-9]{4})?')
@@ -34,21 +40,27 @@ def main():
                 # regex handles days correctly, just split by uppercase letter
                 days = set(re.findall('[A-Z][^A-Z]*', match.group('days')))
                 start = parser.parse(match.group('start')).time()
+                t = str(start).split(':')
+                # convert start time into minutes
+                start_total_minutes = int(t[0])*60+int(t[1])*1 
                 end = parser.parse(match.group('end')).time()
+                t = str(end).split(':')
+                # convert end time into minutes
+                end_total_minutes = int(t[0])*60+int(t[1])*1 
                 if end < start:
                     print('End time should be after start time')
                     exit(1)
-                print(days, start, end)
+                for day in days:
+                    days_dict[day].append([start_total_minutes, end_total_minutes])
             else:
                 print(s, 'did not match format, skipping')
-    exit()
     if len(classes) > 7:
         print('Enter 7 or fewer classes')
         exit(1)
     elif len(classes) == 0:
         print('Enter at least 1 class')
         exit(1)
-
+  
     schedule = get_courses(classes)
     for course_id, sections in classes_with_section.items():
         # collect all sections as a set
@@ -58,13 +70,9 @@ def main():
         # select sections that the user specified
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
 
-        # TODO: drop sections that are contained in the specified time
-
-    print(schedule)
-    exit()
-
+    print(schedule, days_dict)
     # runs genetic_algorithm
-    genetic_algorithm = sga(schedule)
+    genetic_algorithm = sga(schedule, days_dict)
     best_score, best_batch_schedule,best_batch_schedule_decoded = genetic_algorithm.runGA()
 
     print('--------------------')
