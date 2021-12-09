@@ -45,6 +45,11 @@ def get_courses(course_list):
                 meeting.start_time = convert_str_to_int(
                     each_meeting["start_time"])
                 meeting.end_time = convert_str_to_int(each_meeting["end_time"])
+                # ensure async classes never overlap with excluded times
+                if meeting.end_time is None:
+                    meeting.end_time = -1
+                if meeting.end_time is None:
+                    meeting.end_time = 1441
                 section.meetings.append(meeting)
 
             course.sections.append(section)
@@ -66,25 +71,29 @@ def get_sections(course):
     http_request = "https://api.umd.io/v1/courses/" + course + "/sections"
     response = requests.get(http_request)
     json_data = json.loads(response.text)
-    # print(json_data)
+    #  print(json_data)
     return json_data
 
 # def get_course_by_sections
 # https://api.umd.io/v1/courses/{course_ids}/sections/{section_ids}
 
 
-def convert_str_to_int(str):
+def convert_str_to_int(s):
     # convert string time to int time so that we can sort the schedule by time
-
+    #  print(s)
+    # if no time is present assume the course is async
+    # technically this is not correct bc some instructors put course times on elms but this is the best we can do with the data.
+    if len(s) == 0:
+        return None
     time = 0
-    idx_colon = str.find(":")
-    hours = int(str[:idx_colon])
-    idx_m = str.find("m")
-    minutes = int(str[idx_colon+1: idx_m-1])
+    idx_colon = s.find(":")
+    hours = int(s[:idx_colon])
+    idx_m = s.find("m")
+    minutes = int(s[idx_colon+1: idx_m-1])
 
     if hours == 12:
         hours = 0
-    if "pm" in str:
+    if "pm" in s:
         hours += 12
 
     time += hours*60

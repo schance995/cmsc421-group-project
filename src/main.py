@@ -70,15 +70,18 @@ def main():
         # select sections that the user specified
         schedule[course_id_index].sections = [i for i in schedule[course_id_index].sections if i.section_id.split('-')[1] in sections]
 
-    print(schedule, days_dict)
+    # print(schedule, days_dict)
     # runs genetic_algorithm
     genetic_algorithm = sga(schedule, days_dict)
     best_score, best_batch_schedule,best_batch_schedule_decoded = genetic_algorithm.runGA()
 
     print('--------------------')
-    print(f'Overall best fitness score is: {best_score}')
-    print(f'Your schedules are:\n {best_batch_schedule}')
-    print(f'Your schedules are (with section_id):\n {best_batch_schedule_decoded}')
+#    print(f'Overall best fitness score is: {best_score}')
+#    print(f'Your schedules are:\n {best_batch_schedule}')
+#    print(f'Your schedules are (with section_id):\n {best_batch_schedule_decoded}')
+    print('Your schedules are (with section_id):')
+    for schedule in best_batch_schedule_decoded:
+        print(*schedule)
 
 if __name__ == '__main__':
     main()
