@@ -302,6 +302,8 @@ class sga:
                     (f'pop-size={self.pop_size}_group-size={self.group_size}_pm={self.pm}_pc={self.pc}.jpg'))
         # convert the section index of each course into section ids for the final result
         decode_overall_best_group = []
+#        print(self.overall_best_group)
+#        print(self.fitness_function(self.overall_best_group))
         for group in self.overall_best_group:
             course_index = 0
             decode_schedule_section = []
