@@ -81,7 +81,10 @@ def main():
 #    print(f'Your schedules are (with section_id):\n {best_batch_schedule_decoded}')
     print('Your schedules are (with section_id):')
     for schedule in best_batch_schedule_decoded:
-        print(*schedule)
+        #  for s in schedule:
+            #  parts = s.split('-')
+            #  print(f'{parts[0]}({parts[1]})', end=' ')
+        print(*[s.split('-')[0] + '(' + s.split('-')[1] + ')' for s in schedule])
 
 if __name__ == '__main__':
     main()
